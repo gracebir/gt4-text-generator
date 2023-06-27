@@ -5,7 +5,6 @@ import cors from 'cors'
 import 'dotenv/config'
 
 const config = new Configuration({
-    organization: process.env.organization_id,
     apiKey: process.env.api_key
 })
 
@@ -15,21 +14,19 @@ const port = 4000
 app.use(bodyParser.json())
 app.use(cors())
 
-app.post('/', async (req, res) => {
-    const { message } = req.body
-    const completion = await openai.createChatCompletion({
-        model: "gpt-4",
-        messages: [
-            {
-                role: "user", content: `${message}`
-            }
-        ]
+app.post('/', async (req, res)=> {
+    const {message } = req.body
+    if(!message) return res.status(502).json({error:"message can't be empty"})
+    const completion = await openai.createCompletion({
+        model: "text-davinci-003",
+        prompt: message,
+        max_tokens: 2048,
+        temperature: 1
     })
     res.json({
-        completion: completion.data.choices[0].message
+        completion: completion.data.choices[0].text
     })
-}) 
-
+})
 
 app.listen(port, ()=> {
     console.log(`server run on port ${port}`)
